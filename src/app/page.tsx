@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 
 import CoverSection from "@/components/wedding/CoverSection";
-import QuranSection from "@/components/wedding/QoranSection";
+import QuranSection from "@/components/wedding/QuranSection";
 import CoupleSection from "@/components/wedding/CoupleSection";
 import EventSection from "@/components/wedding/EventSection";
+import ClosingSection from "@/components/wedding/ClosingSection";
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
       <QuranSection />
       <CoupleSection />
       <EventSection />
+      <ClosingSection />
     </main>
   );
 }

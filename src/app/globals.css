@@ -10,6 +10,7 @@
   /* Typography */
   --font-sans: var(--font-manrope);
   --font-serif: var(--font-cormorant);
+  --font-arabic: var(--font-arabic);
 
   /* Wedding palette */
   --color-wedding-ivory: #f6f0e6;
@@ -62,6 +63,10 @@ body {
 
 .font-sans {
   font-family: var(--font-manrope), sans-serif;
+}
+
+.font-arabic {
+  font-family: var(--font-arabic), serif;
 }
 
 /* =========================

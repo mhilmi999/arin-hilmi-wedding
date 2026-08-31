@@ -2,9 +2,17 @@ import type { Metadata } from "next";
 import {
   Cormorant_Garamond,
   Manrope,
+  Noto_Naskh_Arabic,
 } from "next/font/google";
 
 import "./globals.css";
+
+const notoNaskhArabic = Noto_Naskh_Arabic({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-arabic",
+  display: "swap",
+});
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -47,9 +55,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id">
+    <html lang="id" suppressHydrationWarning>
       <body
-        className={`${manrope.variable} ${cormorant.variable} antialiased`}
+        suppressHydrationWarning
+        className={`${manrope.variable} ${cormorant.variable} ${notoNaskhArabic.variable} antialiased`}
       >
         {children}
       </body>
