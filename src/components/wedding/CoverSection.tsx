@@ -22,7 +22,7 @@ export default function CoverSection() {
        */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 origin-center translate-y-[16svh] scale-[1.40] bg-cover bg-center opacity-70 sm:translate-y-[13svh] sm:scale-[1.36] md:translate-y-0 md:scale-[1.32] md:bg-[center_16%] lg:scale-[1.36] lg:bg-[center_12%]"
+        className="absolute inset-0 origin-center translate-y-[27svh] scale-[1.40] bg-cover bg-center opacity-70 sm:translate-y-[24svh] sm:scale-[1.36] md:translate-y-[18svh] md:scale-[1.32] md:bg-[center_16%] lg:translate-y-[16svh] lg:scale-[1.36] lg:bg-[center_12%]"
         style={{ backgroundImage: "url('./images/cover.webp')" }}
       />
       <div
@@ -40,34 +40,34 @@ export default function CoverSection() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.9, ease: "easeOut" }}
-        className="relative z-10 mx-auto flex min-h-[calc(100svh-5rem)] w-full max-w-md flex-col items-center text-center"
+        className="relative z-10 mx-auto flex min-h-[calc(100svh-5rem)] w-full max-w-md flex-col items-center text-center md:max-w-2xl lg:max-w-3xl"
       >
         <div className="pt-[3.5svh] sm:pt-[4svh] md:pt-[5svh]">
-          <p className="text-xs font-medium uppercase tracking-[0.32em] text-[#485340]">
+          <p className="text-xs font-medium uppercase tracking-[0.32em] text-[#485340] md:text-base lg:text-lg">
             The Wedding of
           </p>
 
-          <h1 className="mt-5 font-serif text-6xl leading-none tracking-tight text-[#485340] sm:text-7xl">
+          <h1 className="mt-5 font-serif text-6xl leading-none tracking-tight text-[#485340] sm:text-7xl md:text-8xl lg:text-[6.5rem]">
             {wedding.couple.bride.shortName}
             <span className="mx-2 font-normal italic text-[#B49A72]">&</span>
             {wedding.couple.groom.shortName}
           </h1>
         </div>
 
-        <div className="mt-auto w-full pb-2">
-          <div className="mx-auto mb-7 h-px w-14 bg-[#D8C7A8]/75" />
+        <div className="mt-auto w-full pb-[10svh] sm:pb-[9svh] md:pb-[8svh] lg:pb-[7svh]">
+          <div className="mx-auto mb-5 h-px w-14 bg-[#D8C7A8]/75" />
 
-          <p className="text-sm text-[#F6F0E6]/78">Kepada Yth.</p>
+          <p className="text-sm font-medium text-[#485340] md:text-lg lg:text-xl">Kepada Yth.</p>
           <motion.p
             key={guestName}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-2 font-serif text-2xl font-medium text-[#F6F0E6]"
+            className="mt-1.5 font-serif text-2xl font-medium text-[#485340] md:text-4xl lg:text-[2.75rem]"
           >
             {guestName}
           </motion.p>
 
-          <p className="mx-auto mt-4 max-w-xs text-sm leading-6 text-[#F6F0E6]/78">
+          <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-[#485340]/90 md:max-w-md md:text-lg md:leading-8 lg:max-w-lg">
             Dengan penuh kebahagiaan, kami mengundang Bapak/Ibu/Saudara/i
             untuk hadir di hari pernikahan kami.
           </p>
@@ -76,7 +76,7 @@ export default function CoverSection() {
             type="button"
             onClick={handleOpenInvitation}
             whileTap={{ scale: 0.97 }}
-            className="mt-7 rounded-full border border-[#F6F0E6]/35 bg-[#485340]/88 px-8 py-3.5 text-sm font-medium tracking-wide text-[#F6F0E6] shadow-[0_12px_35px_rgba(50,53,47,0.2)] backdrop-blur-sm transition hover:bg-[#3C4636]"
+            className="mt-5 rounded-full border border-[#F6F0E6]/35 bg-[#485340]/88 px-8 py-3.5 text-sm font-medium tracking-wide text-[#F6F0E6] shadow-[0_12px_35px_rgba(50,53,47,0.2)] backdrop-blur-sm transition hover:bg-[#3C4636]"
           >
             Buka Undangan
           </motion.button>
