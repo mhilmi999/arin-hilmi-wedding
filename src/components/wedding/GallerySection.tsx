@@ -1,10 +1,10 @@
 const galleryImages = [
-  { src: "./images/gallery/01.webp", position: "center" },
-  { src: "./images/gallery/02.webp", position: "center" },
-  { src: "./images/gallery/03.webp", position: "center" },
-  { src: "./images/gallery/04.webp", position: "center" },
-  { src: "./images/gallery/05.webp", position: "center" },
-  { src: "./images/gallery/06.webp", position: "center" },
+  { src: "./images/gallery/01.webp", position: "center 52%" },
+  { src: "./images/gallery/02.webp", position: "center 58%" },
+  { src: "./images/gallery/03.webp", position: "center 48%" },
+  { src: "./images/gallery/04.webp", position: "center 43%" },
+  { src: "./images/gallery/05.webp", position: "center 43%" },
+  { src: "./images/gallery/06.webp", position: "center 55%" },
 ] as const;
 
 export default function GallerySection() {
@@ -30,13 +30,13 @@ export default function GallerySection() {
           </p>
         </div>
 
-        <div className="mt-12 grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="mt-12 grid grid-cols-2 gap-3 sm:gap-4 md:gap-5">
           {galleryImages.map((image, index) => (
             <div
               key={image.src}
               role="img"
               aria-label={`Foto galeri Arin dan Hilmi ${index + 1}`}
-              className="aspect-[3/4] overflow-hidden rounded-[1.4rem] border border-[#B49A72]/15 bg-[#EAE0D1] bg-cover shadow-[0_12px_35px_rgba(72,83,64,0.08)] sm:rounded-[1.75rem]"
+              className="aspect-[5/4] overflow-hidden rounded-[0.45rem] border border-[#B49A72]/10 bg-[#EAE0D1] bg-cover shadow-[0_10px_28px_rgba(72,83,64,0.07)]"
               style={{
                 backgroundImage: `url('${image.src}')`,
                 backgroundPosition: image.position,
