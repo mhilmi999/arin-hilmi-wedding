@@ -6,21 +6,27 @@ function CoupleProfile({
   person,
   label,
   image,
+  imagePosition,
+  imageScale,
 }: {
   person: Person;
   label: string;
   image: string;
+  imagePosition: string;
+  imageScale: string;
 }) {
   return (
     <div>
       <div className="relative mx-auto mb-9 w-full max-w-[275px]">
         <div className="absolute -inset-2 rounded-[48%_48%_44%_44%/56%_56%_44%_44%] border border-[#B49A72]/45" />
-        <div
-          role="img"
-          aria-label={`Foto ${person.shortName}`}
-          className="aspect-[4/5] w-full overflow-hidden rounded-[48%_48%_44%_44%/56%_56%_44%_44%] border-4 border-[#F6F0E6] bg-[#EAE0D1] bg-cover bg-center shadow-[0_18px_45px_rgba(72,83,64,0.12)]"
-          style={{ backgroundImage: `url('${image}')` }}
-        />
+        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[48%_48%_44%_44%/56%_56%_44%_44%] border-4 border-[#F6F0E6] bg-[#EAE0D1] shadow-[0_18px_45px_rgba(72,83,64,0.12)]">
+          <div
+            role="img"
+            aria-label={`Foto ${person.shortName}`}
+            className={`absolute inset-0 origin-top bg-cover ${imagePosition} ${imageScale}`}
+            style={{ backgroundImage: `url('${image}')` }}
+          />
+        </div>
         <span className="absolute -bottom-4 left-1/2 h-8 w-8 -translate-x-1/2 rotate-45 border border-[#B49A72]/45 bg-[#F6F0E6]" />
       </div>
 
@@ -85,6 +91,8 @@ export default function CoupleSection() {
             person={bride}
             label="The Bride"
             image="./images/bride.webp"
+            imagePosition="bg-[center_22%] md:bg-[center_18%]"
+            imageScale="scale-[1.22] md:scale-[1.18]"
           />
 
           <div className="flex items-center justify-center md:min-h-[560px]">
@@ -99,6 +107,8 @@ export default function CoupleSection() {
             person={groom}
             label="The Groom"
             image="./images/groom.webp"
+            imagePosition="bg-[center_18%] md:bg-[center_15%]"
+            imageScale="scale-[1.20] md:scale-[1.16]"
           />
         </div>
       </div>

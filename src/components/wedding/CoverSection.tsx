@@ -22,7 +22,7 @@ export default function CoverSection() {
        */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-[center_68%] opacity-70"
+        className="absolute inset-0 origin-center translate-y-[16svh] scale-[1.40] bg-cover bg-center opacity-70 sm:translate-y-[13svh] sm:scale-[1.36] md:translate-y-0 md:scale-[1.32] md:bg-[center_16%] lg:scale-[1.36] lg:bg-[center_12%]"
         style={{ backgroundImage: "url('./images/cover.webp')" }}
       />
       <div
@@ -42,7 +42,7 @@ export default function CoverSection() {
         transition={{ duration: 0.9, ease: "easeOut" }}
         className="relative z-10 mx-auto flex min-h-[calc(100svh-5rem)] w-full max-w-md flex-col items-center text-center"
       >
-        <div className="pt-[8svh]">
+        <div className="pt-[3.5svh] sm:pt-[4svh] md:pt-[5svh]">
           <p className="text-xs font-medium uppercase tracking-[0.32em] text-[#485340]">
             The Wedding of
           </p>
