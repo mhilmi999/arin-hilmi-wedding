@@ -10,7 +10,7 @@ import "./globals.css";
 const notoNaskhArabic = Noto_Naskh_Arabic({
   subsets: ["arabic"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-arabic",
+  variable: "--font-noto-arabic",
   display: "swap",
 });
 

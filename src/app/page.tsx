@@ -1,10 +1,12 @@
 import { Suspense } from "react";
 
-import CoverSection from "@/components/wedding/CoverSection";
-import QuranSection from "@/components/wedding/QuranSection";
-import CoupleSection from "@/components/wedding/CoupleSection";
-import EventSection from "@/components/wedding/EventSection";
 import ClosingSection from "@/components/wedding/ClosingSection";
+import CoupleSection from "@/components/wedding/CoupleSection";
+import CoverSection from "@/components/wedding/CoverSection";
+import EventSection from "@/components/wedding/EventSection";
+import GallerySection from "@/components/wedding/GallerySection";
+import QuranSection from "@/components/wedding/QuranSection";
+import WeddingMusic from "@/components/wedding/WeddingMusic";
 
 export default function Home() {
   return (
@@ -16,7 +18,9 @@ export default function Home() {
       <QuranSection />
       <CoupleSection />
       <EventSection />
+      <GallerySection />
       <ClosingSection />
+      <WeddingMusic />
     </main>
   );
 }
