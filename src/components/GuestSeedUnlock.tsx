@@ -51,9 +51,29 @@ export default function GuestSeedUnlock({ onUnlock }: Props) {
   const [status, setStatus] = useState("");
 
   useEffect(() => {
-    if (localStorage.getItem(MARKER_KEY) === "1") {
-      setAlreadyLoaded(true);
-      setShowUnlock(false);
+    // Jangan percaya marker lama saja: browser bisa menyimpan marker
+    // sekalipun daftar tamu terhapus / sebelumnya gagal tersimpan.
+    try {
+      const saved: unknown = JSON.parse(localStorage.getItem("arin-hilmi-wedding-guests-v1") || "[]");
+      const ids = Array.isArray(saved)
+        ? new Set<string>(saved.flatMap((item: unknown): string[] => {
+            if (item && typeof item === "object" && "id" in item &&
+              typeof item.id === "string" && /^xl-(?:abi|mama|kai|arin)-/.test(item.id)) return [item.id];
+            return [];
+          }))
+        : new Set<string>();
+      if (ids.size === encrypted.count) {
+        setAlreadyLoaded(true);
+        setShowUnlock(false);
+        localStorage.setItem(MARKER_KEY, "1");
+      } else {
+        setAlreadyLoaded(false);
+        setShowUnlock(true);
+        localStorage.removeItem(MARKER_KEY);
+      }
+    } catch {
+      setAlreadyLoaded(false);
+      setShowUnlock(true);
     }
   }, []);
 
@@ -69,7 +89,7 @@ export default function GuestSeedUnlock({ onUnlock }: Props) {
       setAlreadyLoaded(true);
       setShowUnlock(false);
       setPassword("");
-      setStatus(`Master Excel dipulihkan: ${added} nama ditambahkan, ${skipped} sudah ada.`);
+      setStatus(`Siap dicari: ${added} entri ditambahkan, ${skipped} sudah tersimpan. Total master Excel: ${encrypted.count} penerima.`);
     } catch {
       setStatus("Kunci tidak cocok atau data master tidak dapat dibuka. Periksa kunci akses.");
     } finally {
@@ -78,14 +98,16 @@ export default function GuestSeedUnlock({ onUnlock }: Props) {
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-[#D8C7A8] bg-white/80 p-4 text-sm leading-6 text-[#5D624F]">
+    <section className="mt-4 rounded-2xl border border-[#D8C7A8] bg-[#F8F6F0] p-3 text-sm leading-6 text-[#5D624F]">
       <h2 className="flex items-center gap-2 font-serif text-xl text-[#485340]">
         {alreadyLoaded ? <CheckCircle2 size={19} /> : <LockKeyhole size={19} />}
         Master Tamu dari Excel
       </h2>
       <p className="mt-1 text-sm text-[#65685E]">
-        {encrypted.count} penerima sudah disiapkan dari rekap Arin & Hilmi. Tidak perlu mengunggah Excel lagi.
-        Nama dienkripsi di situs publik agar daftar tidak terbaca begitu saja oleh pengunjung.
+        {alreadyLoaded
+          ? `${encrypted.count} penerima sudah tersedia di suggestion. Ketik nama pada kolom pencarian di bawah.`
+          : `${encrypted.count} penerima (142 orang) dari dua sheet Excel sudah disiapkan. Masukkan kunci sekali agar semua muncul di suggestion; tidak perlu unggah file.`}
+        {" "}Daftar tetap terenkripsi di situs publik.
       </p>
       {showUnlock ? (
         <form className="mt-3 flex flex-col gap-2 sm:flex-row" onSubmit={handleUnlock}>
@@ -96,7 +118,7 @@ export default function GuestSeedUnlock({ onUnlock }: Props) {
             className="min-w-0 flex-1 rounded-xl border border-[#DED4C3] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#485340]"
           />
           <button type="submit" disabled={loading} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#485340] px-4 py-2.5 text-sm text-white disabled:opacity-60">
-            <KeyRound size={16} /> {loading ? "Membuka..." : "Buka daftar"}
+            <KeyRound size={16} /> {loading ? "Membuka..." : "Tampilkan 122 nama"}
           </button>
         </form>
       ) : (

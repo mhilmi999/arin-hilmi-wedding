@@ -1,9 +1,8 @@
 "use client";
 
 import GuestSeedUnlock from "@/components/GuestSeedUnlock";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Check, Copy, ExternalLink, MessageCircle, Plus, Search, Trash2 } from "lucide-react";
-import GuestExcelImport, { type ImportedGuest } from "@/components/GuestExcelImport";
 import {
   cleanGuestName,
   guestCategories,
@@ -44,6 +43,7 @@ export default function GuestManagerPage() {
   const [phone, setPhone] = useState("");
   const [copied, setCopied] = useState(false);
   const [basePath, setBasePath] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setBasePath(invitationBasePath(window.location.pathname));
@@ -58,20 +58,31 @@ export default function GuestManagerPage() {
   const matches = useMemo(() => guests.filter((guest) =>
     guest.name.toLocaleLowerCase("id-ID").includes(query.toLocaleLowerCase("id-ID").trim())
   ).sort((a, b) => a.name.localeCompare(b.name, "id")), [guests, query]);
+  // "Entri penerima" dan "jumlah personil" adalah dua satuan yang berbeda.
+  // Workbook mencatat 20 undangan KAI untuk 40 orang (kolom Personil = 2).
+  const excelGuests = guests.filter((guest) => /^xl-(?:abi|mama|kai|arin)-/.test(guest.id));
+  const excelPeople = excelGuests.reduce((sum, guest) => sum + (guest.id.startsWith("xl-kai-") ? 2 : 1), 0);
   const selected = guests.find((guest) => guest.id === selectedId) || null;
   const link = selected && typeof window !== "undefined" ? `${window.location.origin}${invitationPath(selected, basePath)}` : "";
   const message = selected ? whatsappMessage(selected, link) : "";
 
   function applySeed(incoming: WeddingGuest[]): { added: number; skipped: number } {
-    const keys = new Set(guests.map((guest) => `${guest.name.toLocaleLowerCase("id-ID")}::${guest.group || ""}`));
-    const added: WeddingGuest[] = [];
-    for (const guest of incoming) {
-      const key = `${guest.name.toLocaleLowerCase("id-ID")}::${guest.group || ""}`;
-      if (keys.has(key)) continue;
-      keys.add(key);
-      added.push(guest);
-    }
-    setGuests((current) => [...current, ...added]);
+    // Hanya satu record untuk setiap baris Excel; jangan deduplikasi berdasarkan
+    // nama karena beberapa baris "Irma" / "Suami Irma" memang terpisah.
+    const current = ready ? guests : loadGuests();
+    const knownIds = new Set(current.map((guest) => guest.id));
+    const added = incoming.filter((guest) => {
+      if (knownIds.has(guest.id)) return false;
+      knownIds.add(guest.id);
+      return true;
+    });
+    const merged = [...current, ...added];
+    // Persist secara sinkron SEBELUM menandai master sudah terbuka agar
+    // refresh cepat tidak menyisakan marker "sudah dimuat" tanpa nama.
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+    setGuests(merged);
+    setReady(true);
+    searchRef.current?.focus();
     return { added: added.length, skipped: incoming.length - added.length };
   }
 
@@ -87,19 +98,6 @@ export default function GuestManagerPage() {
     setPhone("");
   }
 
-  function importGuests(incoming: ImportedGuest[]): { added: number; skipped: number } {
-    const known = new Set(guests.map((guest) => `${guest.name.toLocaleLowerCase("id-ID")}::${guest.category}`));
-    const added: WeddingGuest[] = [];
-    let skipped = 0;
-    for (const item of incoming) {
-      const key = `${item.name.toLocaleLowerCase("id-ID")}::${item.category}`;
-      if (known.has(key)) { skipped++; continue; }
-      known.add(key);
-      added.push({ id: crypto.randomUUID(), name: item.name, category: item.category, phone: item.phone });
-    }
-    setGuests((current) => [...current, ...added]);
-    return { added: added.length, skipped };
-  }
 
   async function copyValue(value: string) {
     try {
@@ -118,20 +116,23 @@ export default function GuestManagerPage() {
         <p className="mt-8 text-xs font-semibold uppercase tracking-[0.25em] text-[#846B54]">Arin & Hilmi · 26 Desember 2026</p>
         <h1 className="mt-2 font-serif text-4xl text-[#485340] sm:text-5xl">Pengelola Tamu</h1>
         <p className="mt-3 text-sm leading-6 text-[#65685E]">Cari nama, pilih penerima, lalu buat pesan dan tautan WhatsApp otomatis.</p>
-        <GuestSeedUnlock onUnlock={applySeed} />
 
         <div className="mt-6 rounded-2xl border border-[#D8C7A8] bg-white/70 p-4 text-sm leading-6 text-[#5D624F]">
-          Master dari Excel tersimpan terenkripsi di situs. Setelah dibuka, daftar tamu dan nomor yang kamu tambahkan tersimpan di browser perangkat ini. Halaman pengelola belum memakai login; hindari menyimpan data sensitif.
+          Daftar tamu Excel tersimpan terenkripsi. Buka master sekali di browser ini agar semua nama masuk ke pencarian secara otomatis. Nomor WhatsApp tambahan dan data tamu yang sudah dibuka disimpan di browser ini; halaman belum memiliki login admin.
         </div>
-
-        <GuestExcelImport onImport={importGuests} />
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <section className="rounded-3xl border border-[#E6D9C6] bg-white/80 p-5 shadow-sm">
-            <h2 className="font-serif text-2xl text-[#485340]">Daftar Tamu <span className="font-sans text-sm font-normal text-[#777C6D]">({guests.length})</span></h2>
+            <h2 className="font-serif text-2xl text-[#485340]">Daftar Tamu <span className="font-sans text-sm font-normal text-[#777C6D]">({guests.length} entri)</span></h2>
+            <p className="mt-2 text-xs leading-5 text-[#777C6D]">
+              {excelGuests.length > 0
+                ? `${excelGuests.length} penerima dari Excel · ${excelPeople} orang sesuai kolom Personil (KAI 2 orang/undangan).`
+                : "Master Excel belum dibuka di browser ini. Ada 122 penerima (142 orang) yang siap ditambahkan ke suggestion."}
+            </p>
+            <GuestSeedUnlock onUnlock={applySeed} />
             <label className="mt-5 block text-sm font-medium" htmlFor="search-guest">Cari nama tamu</label>
             <div className="relative mt-2"><Search className="absolute left-3 top-3 text-[#846B54]" size={18} />
-              <input id="search-guest" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Contoh: Ahmad, Brian..." autoComplete="off" className="w-full rounded-xl border border-[#DED4C3] bg-white py-2.5 pl-10 pr-3 text-sm outline-none focus:border-[#485340]" />
+              <input ref={searchRef} id="search-guest" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Contoh: Ahmad, Brian..." autoComplete="off" className="w-full rounded-xl border border-[#DED4C3] bg-white py-2.5 pl-10 pr-3 text-sm outline-none focus:border-[#485340]" />
             </div>
             <div className="mt-3 max-h-56 overflow-y-auto rounded-xl border border-[#E6D9C6]" role="listbox" aria-label="Hasil pencarian tamu">
               {matches.length ? matches.map((guest) => (
@@ -139,7 +140,7 @@ export default function GuestManagerPage() {
                   <span><span className="block font-medium">{guestDisplayName(guest)}</span><span className="block text-xs text-[#777C6D]">{guestCategories.find((c) => c.value === guest.category)?.label}{guest.group ? ` · ${guest.group}` : ""}</span></span>
                   {selectedId === guest.id && <Check size={17} className="shrink-0 text-[#485340]" />}
                 </button>
-              )) : <p className="px-3 py-4 text-sm text-[#777C6D]">{ready ? "Belum ada nama yang cocok." : "Memuat tamu..."}</p>}
+              )) : <p className="px-3 py-4 text-sm text-[#777C6D]">{ready ? "Belum ada nama yang cocok. Jika master belum dibuka, gunakan kotak Buka Master di atas." : "Memuat tamu..."}</p>}
             </div>
 
             <form onSubmit={addGuest} className="mt-6 border-t border-[#E6D9C6] pt-5">
