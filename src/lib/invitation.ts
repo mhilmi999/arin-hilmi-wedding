@@ -43,9 +43,13 @@ export function shortGuestName(guest: Pick<WeddingGuest, "name" | "category">): 
   return guest.category === "keluarga" ? `${short} & Keluarga` : short;
 }
 
-export function invitationPath(guest: Pick<WeddingGuest, "name" | "category">): string {
+export function invitationBasePath(pathname: string): string {
+  return pathname.replace(/\/tamu(?:\/index\.html|\/|\.html)?$/, "").replace(/\/$/, "");
+}
+
+export function invitationPath(guest: Pick<WeddingGuest, "name" | "category">, basePath = ""): string {
   const params = new URLSearchParams({ to: guestDisplayName(guest), kategori: guest.category });
-  return `/?${params.toString()}`;
+  return `${basePath.replace(/\/$/, "")}/?${params.toString()}`;
 }
 
 export function whatsappMessage(guest: Pick<WeddingGuest, "name" | "category">, url: string): string {

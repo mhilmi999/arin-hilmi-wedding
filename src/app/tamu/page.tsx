@@ -7,6 +7,7 @@ import {
   guestCategories,
   guestDisplayName,
   guestSalutation,
+  invitationBasePath,
   invitationPath,
   shortGuestName,
   whatsappLink,
@@ -40,8 +41,10 @@ export default function GuestManagerPage() {
   const [category, setCategory] = useState<GuestCategory>("rekan");
   const [phone, setPhone] = useState("");
   const [copied, setCopied] = useState(false);
+  const [basePath, setBasePath] = useState("");
 
   useEffect(() => {
+    setBasePath(invitationBasePath(window.location.pathname));
     const saved = loadGuests();
     setGuests(saved);
     setReady(true);
@@ -54,7 +57,7 @@ export default function GuestManagerPage() {
     guest.name.toLocaleLowerCase("id-ID").includes(query.toLocaleLowerCase("id-ID").trim())
   ).sort((a, b) => a.name.localeCompare(b.name, "id")), [guests, query]);
   const selected = guests.find((guest) => guest.id === selectedId) || null;
-  const link = selected && typeof window !== "undefined" ? `${window.location.origin}${invitationPath(selected)}` : "";
+  const link = selected && typeof window !== "undefined" ? `${window.location.origin}${invitationPath(selected, basePath)}` : "";
   const message = selected ? whatsappMessage(selected, link) : "";
 
   function addGuest(event: React.FormEvent<HTMLFormElement>) {
@@ -82,7 +85,7 @@ export default function GuestManagerPage() {
   return (
     <main className="min-h-screen bg-[#F6F0E6] px-4 py-8 text-[#32352F] sm:px-6">
       <div className="mx-auto max-w-3xl">
-        <a className="inline-flex items-center gap-2 text-sm text-[#485340] hover:underline" href="/"><ArrowLeft size={16} /> Kembali ke undangan</a>
+        <a className="inline-flex items-center gap-2 text-sm text-[#485340] hover:underline" href={`${basePath}/`}><ArrowLeft size={16} /> Kembali ke undangan</a>
         <p className="mt-8 text-xs font-semibold uppercase tracking-[0.25em] text-[#846B54]">Arin & Hilmi · 26 Desember 2026</p>
         <h1 className="mt-2 font-serif text-4xl text-[#485340] sm:text-5xl">Pengelola Tamu</h1>
         <p className="mt-3 text-sm leading-6 text-[#65685E]">Cari nama, pilih penerima, lalu buat pesan dan tautan WhatsApp otomatis.</p>
@@ -132,7 +135,7 @@ export default function GuestManagerPage() {
               <p className="mt-1 break-all rounded-xl bg-[#F6F0E6] p-3 text-xs">{link}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button type="button" onClick={() => copyValue(link)} className="inline-flex items-center gap-1 rounded-xl border border-[#D8C7A8] px-3 py-2 text-sm"><Copy size={15} /> Salin link</button>
-                <a href={invitationPath(selected)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-xl border border-[#D8C7A8] px-3 py-2 text-sm"><ExternalLink size={15} /> Pratinjau</a>
+                <a href={invitationPath(selected, basePath)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-xl border border-[#D8C7A8] px-3 py-2 text-sm"><ExternalLink size={15} /> Pratinjau</a>
               </div>
               <p className="mt-5 text-xs font-medium">Pesan WhatsApp · nama: {shortGuestName(selected)}</p>
               <textarea readOnly rows={13} value={message} aria-label="Pesan WhatsApp" className="mt-2 w-full resize-y rounded-xl border border-[#E6D9C6] bg-[#F6F0E6] p-3 text-xs leading-6" />
