@@ -59,6 +59,7 @@ export function whatsappMessage(guest: Pick<WeddingGuest, "name" | "category">, 
 
 export function whatsappLink(message: string, phone?: string): string {
   const digits = (phone || "").replace(/\D/g, "");
-  const normalized = digits.startsWith("0") ? `62${digits.slice(1)}` : digits;
+  const normalized = digits.startsWith("0") ? `62${digits.slice(1)}`
+    : /^8\d{8,14}$/.test(digits) ? `62${digits}` : digits;
   return `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`;
 }

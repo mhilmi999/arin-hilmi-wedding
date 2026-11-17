@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Check, Copy, ExternalLink, MessageCircle, Plus, Search, Trash2 } from "lucide-react";
+import GuestExcelImport, { type ImportedGuest } from "@/components/GuestExcelImport";
 import {
   cleanGuestName,
   guestCategories,
@@ -72,6 +73,20 @@ export default function GuestManagerPage() {
     setPhone("");
   }
 
+  function importGuests(incoming: ImportedGuest[]): { added: number; skipped: number } {
+    const known = new Set(guests.map((guest) => `${guest.name.toLocaleLowerCase("id-ID")}::${guest.category}`));
+    const added: WeddingGuest[] = [];
+    let skipped = 0;
+    for (const item of incoming) {
+      const key = `${item.name.toLocaleLowerCase("id-ID")}::${item.category}`;
+      if (known.has(key)) { skipped++; continue; }
+      known.add(key);
+      added.push({ id: crypto.randomUUID(), name: item.name, category: item.category, phone: item.phone });
+    }
+    setGuests((current) => [...current, ...added]);
+    return { added: added.length, skipped };
+  }
+
   async function copyValue(value: string) {
     try {
       await navigator.clipboard.writeText(value);
@@ -93,9 +108,11 @@ export default function GuestManagerPage() {
           Data nama dan nomor telepon tersimpan hanya di browser perangkat ini. Halaman ini belum memakai login atau database bersama; jangan gunakan untuk data sensitif atau menganggapnya sebagai panel privat yang aman.
         </div>
 
+        <GuestExcelImport onImport={importGuests} />
+
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <section className="rounded-3xl border border-[#E6D9C6] bg-white/80 p-5 shadow-sm">
-            <h2 className="font-serif text-2xl text-[#485340]">Daftar Tamu</h2>
+            <h2 className="font-serif text-2xl text-[#485340]">Daftar Tamu <span className="font-sans text-sm font-normal text-[#777C6D]">({guests.length})</span></h2>
             <label className="mt-5 block text-sm font-medium" htmlFor="search-guest">Cari nama tamu</label>
             <div className="relative mt-2"><Search className="absolute left-3 top-3 text-[#846B54]" size={18} />
               <input id="search-guest" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Contoh: Ahmad, Brian..." autoComplete="off" className="w-full rounded-xl border border-[#DED4C3] bg-white py-2.5 pl-10 pr-3 text-sm outline-none focus:border-[#485340]" />
