@@ -4,10 +4,13 @@ import { motion } from "motion/react";
 import { useSearchParams } from "next/navigation";
 
 import { wedding } from "@/data/wedding";
+import { guestSalutation, isGuestCategory } from "@/lib/invitation";
 
 export default function CoverSection() {
   const searchParams = useSearchParams();
-  const guestName = searchParams.get("to")?.trim() || "Bapak/Ibu/Saudara/i";
+  const guestName = searchParams.get("to")?.trim().slice(0, 160) || "Bapak/Ibu/Saudara/i";
+  const categoryParam = searchParams.get("kategori");
+  const guestCategory = isGuestCategory(categoryParam) ? categoryParam : "umum";
 
   const handleOpenInvitation = () => {
     window.dispatchEvent(new Event("wedding:open"));
@@ -57,7 +60,7 @@ export default function CoverSection() {
         <div className="mt-auto w-full pb-[10svh] sm:pb-[9svh] md:pb-[8svh] lg:pb-[7svh]">
           <div className="mx-auto mb-5 h-px w-14 bg-[#D8C7A8]/75" />
 
-          <p className="text-sm font-medium text-[#485340] md:text-lg lg:text-xl">Kepada Yth.</p>
+          <p className="text-sm font-medium text-[#485340] md:text-lg lg:text-xl">{guestSalutation(guestCategory)}</p>
           <motion.p
             key={guestName}
             initial={{ opacity: 0 }}
