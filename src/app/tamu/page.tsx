@@ -1,5 +1,6 @@
 "use client";
 
+import GuestSeedUnlock from "@/components/GuestSeedUnlock";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Check, Copy, ExternalLink, MessageCircle, Plus, Search, Trash2 } from "lucide-react";
 import GuestExcelImport, { type ImportedGuest } from "@/components/GuestExcelImport";
@@ -61,6 +62,19 @@ export default function GuestManagerPage() {
   const link = selected && typeof window !== "undefined" ? `${window.location.origin}${invitationPath(selected, basePath)}` : "";
   const message = selected ? whatsappMessage(selected, link) : "";
 
+  function applySeed(incoming: WeddingGuest[]): { added: number; skipped: number } {
+    const keys = new Set(guests.map((guest) => `${guest.name.toLocaleLowerCase("id-ID")}::${guest.group || ""}`));
+    const added: WeddingGuest[] = [];
+    for (const guest of incoming) {
+      const key = `${guest.name.toLocaleLowerCase("id-ID")}::${guest.group || ""}`;
+      if (keys.has(key)) continue;
+      keys.add(key);
+      added.push(guest);
+    }
+    setGuests((current) => [...current, ...added]);
+    return { added: added.length, skipped: incoming.length - added.length };
+  }
+
   function addGuest(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const cleaned = cleanGuestName(name);
@@ -104,8 +118,10 @@ export default function GuestManagerPage() {
         <p className="mt-8 text-xs font-semibold uppercase tracking-[0.25em] text-[#846B54]">Arin & Hilmi · 26 Desember 2026</p>
         <h1 className="mt-2 font-serif text-4xl text-[#485340] sm:text-5xl">Pengelola Tamu</h1>
         <p className="mt-3 text-sm leading-6 text-[#65685E]">Cari nama, pilih penerima, lalu buat pesan dan tautan WhatsApp otomatis.</p>
+        <GuestSeedUnlock onUnlock={applySeed} />
+
         <div className="mt-6 rounded-2xl border border-[#D8C7A8] bg-white/70 p-4 text-sm leading-6 text-[#5D624F]">
-          Data nama dan nomor telepon tersimpan hanya di browser perangkat ini. Halaman ini belum memakai login atau database bersama; jangan gunakan untuk data sensitif atau menganggapnya sebagai panel privat yang aman.
+          Master dari Excel tersimpan terenkripsi di situs. Setelah dibuka, daftar tamu dan nomor yang kamu tambahkan tersimpan di browser perangkat ini. Halaman pengelola belum memakai login; hindari menyimpan data sensitif.
         </div>
 
         <GuestExcelImport onImport={importGuests} />
@@ -120,7 +136,7 @@ export default function GuestManagerPage() {
             <div className="mt-3 max-h-56 overflow-y-auto rounded-xl border border-[#E6D9C6]" role="listbox" aria-label="Hasil pencarian tamu">
               {matches.length ? matches.map((guest) => (
                 <button type="button" role="option" aria-selected={selectedId === guest.id} key={guest.id} onClick={() => setSelectedId(guest.id)} className={`flex w-full items-center justify-between gap-2 border-b border-[#EFE7DB] px-3 py-3 text-left text-sm last:border-0 hover:bg-[#F6F0E6] ${selectedId === guest.id ? "bg-[#EEF0E6]" : ""}`}>
-                  <span><span className="block font-medium">{guestDisplayName(guest)}</span><span className="block text-xs text-[#777C6D]">{guestCategories.find((c) => c.value === guest.category)?.label}</span></span>
+                  <span><span className="block font-medium">{guestDisplayName(guest)}</span><span className="block text-xs text-[#777C6D]">{guestCategories.find((c) => c.value === guest.category)?.label}{guest.group ? ` · ${guest.group}` : ""}</span></span>
                   {selectedId === guest.id && <Check size={17} className="shrink-0 text-[#485340]" />}
                 </button>
               )) : <p className="px-3 py-4 text-sm text-[#777C6D]">{ready ? "Belum ada nama yang cocok." : "Memuat tamu..."}</p>}
