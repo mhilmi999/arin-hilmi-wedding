@@ -6,6 +6,7 @@ export type WeddingGuest = {
   category: GuestCategory;
   phone?: string;
   group?: string; // Asal data dari workbook; opsional untuk tamu yang ditambah manual.
+  people?: number; // Estimasi jumlah undangan/orang; tidak selalu tersedia (online).
 };
 
 export const guestCategories: { value: GuestCategory; label: string }[] = [
@@ -38,14 +39,15 @@ export function guestDisplayName(guest: Pick<WeddingGuest, "name" | "category" |
 // Two words of the person's name, preserving a leading honorific and family suffix.
 export function shortGuestName(guest: Pick<WeddingGuest, "name" | "category" | "group">): string {
   const display = guestDisplayName(guest);
-  const hasFamily = /(?:&|dan|beserta)\s+keluarga\b/i.test(display);
-  const full = display.replace(/\s*(?:&|dan|beserta)\s+keluarga\s*$/i, "");
+  const suffixMatch = display.match(/\s*(?:&|dan|beserta)\s+(keluarga|partner)\s*$/i);
+  const suffix = suffixMatch ? ` & ${suffixMatch[1] === "partner" ? "Partner" : "Keluarga"}` : "";
+  const full = suffixMatch ? display.slice(0, -suffixMatch[0].length) : display;
   const words = full.split(" ").filter(Boolean);
-  const honorifics = /^(bapak|ibu|pak|bu|mas|mbak|kak|dr\.?|drg\.?|prof\.?|h\.?|hj\.?)$/i;
+  const honorifics = /^(bapak|ibu|pak|bu|mas|mbak|kak|pakde|bude|mbah|eyang|om|tante|keluarga|dr\.?|drg\.?|dr\.techn\.|dr\.eng\.|ir\.?|prof\.?|h\.?|hj\.?)$/i;
   const prefix: string[] = [];
   while (words.length && honorifics.test(words[0])) prefix.push(words.shift()!);
   const short = [...prefix, ...words.slice(0, 2)].join(" ") || full;
-  return hasFamily ? `${short} & Keluarga` : short;
+  return `${short}${suffix}`;
 }
 
 export function invitationBasePath(pathname: string): string {
@@ -58,8 +60,33 @@ export function invitationPath(guest: Pick<WeddingGuest, "name" | "category" | "
 }
 
 export function whatsappMessage(guest: Pick<WeddingGuest, "name" | "category" | "group">, url: string): string {
-  const salutation = guestSalutation(guest.category);
-  return `UNDANGAN PERNIKAHAN 💌\n━━━━━━━━━━━━━━━━━━\n\nAssalamu'alaikum Wr. Wb.\n\n${salutation}\n${shortGuestName(guest)}\n\nDengan memohon rahmat dan ridho Allah SWT, kami bermaksud membagikan kabar bahagia serta memohon doa restu pada acara pernikahan kami:\n\nArin & Hilmi\n\nSabtu, 26 Desember 2026\n\nDetail acara:\n${url}\n\nMerupakan suatu kehormatan dan kebahagiaan bagi kami apabila berkenan hadir dan memberikan doa restu.\n\nWassalamu'alaikum Wr. Wb.\n\nArin & Hilmi`;
+  return `Assalamu’alaikum Warahmatullahi Wabarakatuh,
+Bismillahirrahmanirrahim
+
+Dear
+${shortGuestName(guest)}
+
+Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud membagikan kabar bahagia serta memohon doa restu pada acara pernikahan kami:
+
+Nabilah Arina Khoirunnisa
+&
+Muhammad Hilmi Ramadhan
+
+yang akan diselenggarakan pada:
+
+Hari/Tanggal: Sabtu, 26 Desember 2026
+Waktu Resepsi: 10.00-12.00 WIB
+Tempat: Graha YKP Surabaya, Jl. Penjaringan Sari No. 39, Surabaya, Jawa Timur
+
+Detail acara:
+${url}
+
+Merupakan kehormatan bagi kami apabila Saudara/i berkenan untuk hadir saat pernikahan kami. Kami memohon doa restu untuk kelancaran dan keberkahan pernikahan yang akan kami jalani.
+
+Wassalamu’alaikum Warahmatullahi Wabarakatuh
+
+Yang berbahagia,
+Arin & Hilmi`;
 }
 
 export function whatsappLink(message: string, phone?: string): string {

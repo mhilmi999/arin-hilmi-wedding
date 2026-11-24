@@ -58,32 +58,37 @@ export default function GuestManagerPage() {
   const matches = useMemo(() => guests.filter((guest) =>
     guest.name.toLocaleLowerCase("id-ID").includes(query.toLocaleLowerCase("id-ID").trim())
   ).sort((a, b) => a.name.localeCompare(b.name, "id")), [guests, query]);
-  // "Entri penerima" dan "jumlah personil" adalah dua satuan yang berbeda.
-  // Workbook mencatat 20 undangan KAI untuk 40 orang (kolom Personil = 2).
-  const excelGuests = guests.filter((guest) => /^xl-(?:abi|mama|kai|arin)-/.test(guest.id));
-  const excelPeople = excelGuests.reduce((sum, guest) => sum + (guest.id.startsWith("xl-kai-") ? 2 : 1), 0);
+  // Jumlah penerima dan estimasi orang berbeda; undangan online tidak mempunyai estimasi.
+  const excelGuests = guests.filter((guest) => guest.id.startsWith("xl-"));
+  const excelPeople = excelGuests.reduce((sum, guest) => sum + (guest.people || 0), 0);
+  const excelOnline = excelGuests.filter((guest) => guest.id.startsWith("xl-online-")).length;
   const selected = guests.find((guest) => guest.id === selectedId) || null;
   const link = selected && typeof window !== "undefined" ? `${window.location.origin}${invitationPath(selected, basePath)}` : "";
   const message = selected ? whatsappMessage(selected, link) : "";
 
   function applySeed(incoming: WeddingGuest[]): { added: number; skipped: number } {
-    // Hanya satu record untuk setiap baris Excel; jangan deduplikasi berdasarkan
-    // nama karena beberapa baris "Irma" / "Suami Irma" memang terpisah.
+    // GSheet adalah source of truth untuk entri xl-*; jangan menumpuk versi lama.
+    // Tamu yang ditambahkan manual dan nomor WA lokal tetap dipertahankan.
     const current = ready ? guests : loadGuests();
-    const knownIds = new Set(current.map((guest) => guest.id));
-    const added = incoming.filter((guest) => {
-      if (knownIds.has(guest.id)) return false;
-      knownIds.add(guest.id);
-      return true;
+    const currentById = new Map(current.map((guest) => [guest.id, guest]));
+    const manual = current.filter((guest) => !guest.id.startsWith("xl-"));
+    const official = incoming.map((guest) => {
+      // Posisi baris Sheet dapat berubah. Jangan menempelkan nomor WA milik
+      // baris lama pada nama berbeda jika urutan baris tersisip/bergeser.
+      const byId = currentById.get(guest.id);
+      const matched = byId?.name === guest.name && byId.group === guest.group
+        ? byId
+        : current.find((item) => item.name === guest.name && item.group === guest.group);
+      return { ...guest, phone: matched?.phone || guest.phone || "" };
     });
-    const merged = [...current, ...added];
-    // Persist secara sinkron SEBELUM menandai master sudah terbuka agar
-    // refresh cepat tidak menyisakan marker "sudah dimuat" tanpa nama.
+    const added = incoming.filter((guest) => !currentById.has(guest.id)).length;
+    const merged = [...manual, ...official];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
     setGuests(merged);
     setReady(true);
+    setSelectedId((previous) => merged.some((guest) => guest.id === previous) ? previous : "");
     searchRef.current?.focus();
-    return { added: added.length, skipped: incoming.length - added.length };
+    return { added, skipped: incoming.length - added };
   }
 
   function addGuest(event: React.FormEvent<HTMLFormElement>) {
@@ -118,7 +123,7 @@ export default function GuestManagerPage() {
         <p className="mt-3 text-sm leading-6 text-[#65685E]">Cari nama, pilih penerima, lalu buat pesan dan tautan WhatsApp otomatis.</p>
 
         <div className="mt-6 rounded-2xl border border-[#D8C7A8] bg-white/70 p-4 text-sm leading-6 text-[#5D624F]">
-          Daftar tamu Excel tersimpan terenkripsi. Buka master sekali di browser ini agar semua nama masuk ke pencarian secara otomatis. Nomor WhatsApp tambahan dan data tamu yang sudah dibuka disimpan di browser ini; halaman belum memiliki login admin.
+          Master tamu dari Excel/Google Sheet disimpan terenkripsi. Buka master di browser ini agar semua nama masuk ke suggestion secara otomatis. Nomor WhatsApp tambahan dan data tamu yang sudah dibuka disimpan di browser ini; halaman belum memiliki login admin.
         </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">
@@ -126,10 +131,10 @@ export default function GuestManagerPage() {
             <h2 className="font-serif text-2xl text-[#485340]">Daftar Tamu <span className="font-sans text-sm font-normal text-[#777C6D]">({guests.length} entri)</span></h2>
             <p className="mt-2 text-xs leading-5 text-[#777C6D]">
               {excelGuests.length > 0
-                ? `${excelGuests.length} penerima dari Excel · ${excelPeople} orang sesuai kolom Personil (KAI 2 orang/undangan).`
-                : "Master Excel belum dibuka di browser ini. Ada 122 penerima (142 orang) yang siap ditambahkan ke suggestion."}
+                ? `${excelGuests.length} penerima dari Excel · ${excelPeople} estimasi orang di acara · ${excelOnline} undangan online.`
+                : "Master Excel terbaru belum dibuka di browser ini. Ada 121 penerima dari enam sheet yang siap dicari."}
             </p>
-            <GuestSeedUnlock onUnlock={applySeed} />
+            <GuestSeedUnlock ready={ready} onUnlock={applySeed} />
             <label className="mt-5 block text-sm font-medium" htmlFor="search-guest">Cari nama tamu</label>
             <div className="relative mt-2"><Search className="absolute left-3 top-3 text-[#846B54]" size={18} />
               <input ref={searchRef} id="search-guest" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Contoh: Ahmad, Brian..." autoComplete="off" className="w-full rounded-xl border border-[#DED4C3] bg-white py-2.5 pl-10 pr-3 text-sm outline-none focus:border-[#485340]" />

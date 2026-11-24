@@ -12,6 +12,10 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+  # Sinkronisasi berkala dari Google Sheets privat, tanpa mempublikasikan datanya.
+  schedule:
+    - cron: "17 */6 * * *"
+
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
@@ -31,6 +35,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Sync private Google Sheet if secrets are configured
+        env:
+          GSHEET_SERVICE_ACCOUNT_JSON: ${{ secrets.GSHEET_SERVICE_ACCOUNT_JSON }}
+          WEDDING_GUEST_MASTER_KEY: ${{ secrets.WEDDING_GUEST_MASTER_KEY }}
+        run: |
+          if [ -z "$GSHEET_SERVICE_ACCOUNT_JSON" ] || [ -z "$WEDDING_GUEST_MASTER_KEY" ]; then
+            echo "Google Sheet sync skipped (configure GitHub Actions secrets to enable)."
+            exit 0
+          fi
+          python -m pip install --quiet google-auth cryptography
+          python scripts/sync_google_guests.py
       - name: Detect package manager
         id: detect-package-manager
         run: |
