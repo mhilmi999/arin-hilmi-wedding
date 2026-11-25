@@ -21,8 +21,10 @@ SHEETS = [
     ("Tamu KAI", "kai", None, 1, 4, 2),
     ("Tamu ITS", "its", "senior", 1, 4, 2),
     ("Tamu Arin", "arin", "rekan", 1, 2, 2),
-    ("Sheet2", "online", None, 1, None, 4),
+    ("Keluarga Arin", "online", None, 1, None, 4),
 ]
+# Alias mempertahankan kompatibilitas apabila Google Sheet belum mengikuti rename Excel.
+SHEET_ALIASES = {"Keluarga Arin": ("Keluarga Arin", "Sheet2")}
 BUNDLE_PATH = Path(__file__).resolve().parents[1] / "src/lib/guest-seed.encrypted.json"
 
 
@@ -60,7 +62,7 @@ def normalize(sheet_rows: dict[str, list[list]]) -> list[dict]:
                 group = "Tamu ITS" + (" · " + text_at(row, 3) if text_at(row, 3) else "")
             elif code == "online":
                 cat = "keluarga" if re.search(r"^(trah|keluarga)\b", name, re.I) else "umum"
-                group = "Undangan Online"
+                group = "Keluarga Arin"
             else:
                 cat = category
                 group = sheet

@@ -24,7 +24,8 @@ lalu menerbitkan hasilnya ke GitHub Pages.
    - `WEDDING_GUEST_MASTER_KEY` = kunci master tamu yang sebelumnya digunakan
      untuk membuka daftar di website. Jangan tulis kunci ini di source control.
 5. Pastikan keenam tab Google Sheet bernama persis:
-   `Keluarga Abi`, `Keluarga Mama`, `Tamu KAI`, `Tamu ITS`, `Tamu Arin`, `Sheet2`.
+   `Keluarga Abi`, `Keluarga Mama`, `Tamu KAI`, `Tamu ITS`, `Tamu Arin`, `Keluarga Arin`.
+   Nama lama `Sheet2` masih diterima sementara sebagai fallback otomatis.
    Struktur kolom masing-masing harus sama dengan workbook terbaru.
 6. Jalankan workflow **Deploy Next.js site to Pages** melalui **Actions →
    Run workflow** untuk sinkron pertama. Berikutnya dijalankan otomatis tiap

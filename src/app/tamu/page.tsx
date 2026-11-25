@@ -76,7 +76,7 @@ export default function GuestManagerPage() {
       // Posisi baris Sheet dapat berubah. Jangan menempelkan nomor WA milik
       // baris lama pada nama berbeda jika urutan baris tersisip/bergeser.
       const byId = currentById.get(guest.id);
-      const matched = byId?.name === guest.name && byId.group === guest.group
+      const matched = byId?.name === guest.name
         ? byId
         : current.find((item) => item.name === guest.name && item.group === guest.group);
       return { ...guest, phone: matched?.phone || guest.phone || "" };
